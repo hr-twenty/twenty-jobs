@@ -3,12 +3,12 @@ import secret
 
 db = neo4j.GraphDatabaseService(secret.neo4jcon())
 
-print secret.neo4jcon()
+print(secret.neo4jcon())
 
-query = ''
+query = 'MATCH (a)-->(b) RETURN a, b'
 
 list = neo4j.CypherQuery(db, query).execute()
 
-print [method for method in dir(list) if callable(list, method)]
+print(str(list[0][0]))
 
-print str(list[0][0])
+print('end')
