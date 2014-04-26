@@ -3,9 +3,11 @@ import secret
 
 db = neo4j.GraphDatabaseService(secret.neo4jcon())
 
+print secret.neo4jcon()
+
 query = ''
 
-list = neo4j.CypherQuery(db, query).execute();
+list = neo4j.CypherQuery(db, query).execute()
 
 print [method for method in dir(list) if callable(list, method)]
 
