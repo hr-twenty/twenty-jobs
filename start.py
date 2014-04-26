@@ -1,6 +1,8 @@
 from py2neo import neo4j
 import secret
 
+print secret.neo4jcon
+
 db = neo4j.GraphDatabaseService(secret.neo4jcon())
 
 print(secret.neo4jcon())
