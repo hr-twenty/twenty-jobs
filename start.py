@@ -14,3 +14,5 @@ list = neo4j.CypherQuery(db, query).execute()
 print(str(list[0][0]))
 
 print('end')
+
+
