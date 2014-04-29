@@ -9,10 +9,12 @@ from sklearn.preprocessing import StandardScaler
 ##############################################################################
 # Generate sample data
 centers = [[1, 1], [-1, -1], [1, -1]]
+print(centers.__class__.__name__)
 X, labels_true = make_blobs(n_samples=750, centers=centers, cluster_std=0.4,
                             random_state=0)
 
 X = StandardScaler().fit_transform(X)
+print(labels_true)
 
 ##############################################################################
 # Compute DBSCAN

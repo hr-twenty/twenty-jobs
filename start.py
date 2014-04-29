@@ -1,18 +1,12 @@
-from py2neo import neo4j
-import secret
+from app import clustering
+from modules import db
 
-print secret.neo4jcon
+clustering.runClustering()
 
-db = neo4j.GraphDatabaseService(secret.neo4jcon())
+query = """
+  MATCH (user:User) --> (cluster:Cluster)
+  RETURN user.userId, user.firstName, user.lastName, cluster.clusterIndex
+"""
+table = db.mapArray(db.cypherQuery(query))
 
-print(secret.neo4jcon())
-
-query = 'MATCH (a)-->(b) RETURN a, b'
-
-list = neo4j.CypherQuery(db, query).execute()
-
-print(str(list[0][0]))
-
-print('end')
-
-
+print(table)
