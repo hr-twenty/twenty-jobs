@@ -70,3 +70,29 @@ def assignCluster (userId, clusterIndex) :
   cypherQuery(query)
   
   return None
+
+###########################################################
+def getHistory (userId) :
+  skills = mapColumn(mapArray(getSkillList()), 0)
+
+  query = """
+    MATCH (me:User {{userId:"{0}"}})-->(:Stack)-[:APPROVES]->(other:User)
+    RETURN other.userId
+  """
+  others = mapColumn(mapArray(cypherQuery(query.format(userId))), 0)
+
+  query = """
+    MATCH (me:User {{userId:"{0}"}})-->(:Stack)-[:APPROVES]->(other:User)-->(skill:Skill)
+    RETURN other.userId, skill.skill
+  """
+
+  rows = mapArray(cypherQuery(query.format(userId)))
+  
+  #transform
+  features = [[0 for i in skills] for i in others];
+
+  for row in rows :
+    features[others.index(row[0])][skills.index(row[1])] = 1
+
+  return (others, features)
+
