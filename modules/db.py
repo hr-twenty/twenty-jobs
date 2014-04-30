@@ -62,20 +62,17 @@ def createClusters (num):
   """
   cypherQuery(query)
 
-  for i in range(num):
-    q = "MERGE (c:Cluster {{clusterIndex:{0}}}) RETURN c.clusterIndex".format(i)
-    cypherQuery(q)
+  query = "CREATE (c:Cluster) RETURN id(c)"
 
-  return None
+  return [cypherQuery(query.format(i))[0][0] for i in range(num)]
 
 ###########################################################
-def assignCluster (userId, clusterIndex) :
+def assignCluster (userId, clusterId) :
   query = """
-    MATCH (me:User {{userId:"{0}"}}), (cluster:Cluster {{clusterIndex: {1}}})
-    CREATE (me)-[r:BELONGS_TO]->(cluster)
-    RETURN me, r, cluster
+    START cluster=node({1})
+    MERGE (me:User {{userId:"{0}"}})-[r:BELONGS_TO]->(cluster)
   """
-  query = query.format(userId, clusterIndex)
+  query = query.format(userId, clusterId)
   
   cypherQuery(query)
   

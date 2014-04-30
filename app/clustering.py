@@ -6,10 +6,10 @@ def runClustering ():
   
   labels = ml.cluster(features)
 
-  db.createClusters(len(labels))
+  clusters = db.createClusters(len(set(labels)))
 
   for i in range(len(users)) :
-    db.assignCluster(users[i], labels[i])
+    db.assignCluster(users[i], clusters[labels[i]])
 
   return None
   
