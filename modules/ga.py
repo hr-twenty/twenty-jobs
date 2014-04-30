@@ -1,49 +1,64 @@
 import random
 
-class Chromosome
-  def __init__(self, genes,  mutateRate, mutationDegree) :
+def mutateGene (gene, degree) : 
+  return min(1, max(-1, gene * random.uniform(1-degree, 1+degree)))
+
+class Chromosome :
+  def __init__(self, genes) :
     self.genes = genes
-    self.mutateRate = mutateRate
-    self.mutationDegree = mutationDegree
 
-  def breedWidth (self, mate) :
-    return Chromosome([self.genes[i] if random.randint(0, 1) else mate.genes[i] for i in self.genes], self.mutateRate, self.mutationDegree)
+  def breedWith (self, mate) :
+    return Chromosome([self.genes[i] if random.randint(0, 1) else mate.genes[i] for i in range(len(self.genes))])
 
-  def mutate () :
-    for i in range(len(self.genes)) :
-      if (random.random() < self.mutateRate) :
-        self.genes[i] *= random.uniform(1-self.mutationDegree, 1+self.mutationDegree));
-    
-    return None
+  def mutate (self, complexity, degree) :
+    return Chromosome([mutateGene(gene, degree) if random.random() < complexity else gene for gene in self.genes])
 
-  def score (data) :
+  def score (self, data) :
     success = 0
     for entry in data :
 
+      label, features = entry
+      score = 0
+
+      for i in range(len(features)) :
+        score += features[i] * self.genes[i]
+
+      #print("score", self.genes, features, score)
+      success += 1 if (score >= 1) == label else 0
 
     return success/len(data)
 
-class GA
+
+###########
+# data should be an array of tuples, (label, features)
+#label is true/false, 
+#features is array of features
+###########
+
+class GA :
   poolSize = 100
-  breedRate = 1
-  mutateRate = 0.1
-  mutationDegree = 0.1
+  breedRate = 0.3
+  mutateRate = 1
+  mutationDegree = 1
+  mutationComplexity = 0.5
 
   def __init__(self, data) :
     self.data = data
-    self.chromosomes = [Chromosome([random.random(-1, 1) for j in range(len(data[0][1]))], mutateRate, mutationDegree) for i in range(poolSize)]
+    self.chromosomes = [Chromosome([random.uniform(-1, 1) for j in range(len(data[0][1]))]) for i in range(self.poolSize)]
 
-  def evolve (stableFactor) :
-    max = self.chromosomes[0]
+  def evolve (self, stableFactor) :
+    max = self.chromosomes[0].genes
     stableCycles = 0
 
     while stableCycles < stableFactor :
       self.cycle()
-      if (self.chromosomes[0] == max) :
+      if (self.chromosomes[0].genes == max) :
         stableCycles += 1
       else :
-        max = self.chromosomes[0]
+        print("new")
+        max = self.chromosomes[0].genes[:]
         stableCycles = 0
+      print(stableCycles, max, self.chromosomes[0].score(self.data))
 
     return max
 
@@ -52,21 +67,23 @@ class GA
     self.mutate()
     self.survive()
 
-  def breed () :
-    self.chromosomes += [self.breedRandom() for i in range(int(poolSize*breedRate))]
+  def breed (self) :
+    self.chromosomes += [self.breedRandom() for i in range(int(self.poolSize*self.breedRate))]
 
   def breedRandom (self) :
-    f = self.chromosomes[random.ranint(0, poolSize)]
-    m = self.chromosomes[random.ranint(0, poolSize)]
+    f = self.chromosomes[random.randint(0, self.poolSize-1)]
+    m = self.chromosomes[random.randint(0, self.poolSize-1)]
     return f.breedWith(m)
 
   def mutate (self) :
-    for chromosome in self.chromosomes
-      chromosome.mutate();
+    mutationResults = []
+    for chromosome in self.chromosomes :
+      if ( random.random() < self.mutateRate ) :
+        mutationResults.append(chromosome.mutate(self.mutationComplexity, self.mutationDegree));
+    self.chromosomes += mutationResults
 
   def survive (self) :
     self.chromosomes = sorted(self.chromosomes, key=lambda chromosome: chromosome.score(self.data), reverse=True)
-    self.chromosomes = self[:poolSize]
-
+    self.chromosomes = self.chromosomes[:self.poolSize]
       
 
