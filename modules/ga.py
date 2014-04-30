@@ -1,8 +1,5 @@
 import random
 
-def mutateGene (gene, degree) : 
-  return min(1, max(-1, gene * random.uniform(1-degree, 1+degree)))
-
 class Chromosome :
   def __init__(self, genes) :
     self.genes = genes
@@ -11,7 +8,9 @@ class Chromosome :
     return Chromosome([self.genes[i] if random.randint(0, 1) else mate.genes[i] for i in range(len(self.genes))])
 
   def mutate (self, complexity, degree) :
-    return Chromosome([mutateGene(gene, degree) if random.random() < complexity else gene for gene in self.genes])
+    for i in range(len(self.genes)) :
+      if random.random() < complexity :
+        self.genes[i] = min(1, max(-1, self.genes[i] * random.uniform(1-degree, 1+degree)))
 
   def score (self, data) :
     success = 0
@@ -23,7 +22,6 @@ class Chromosome :
       for i in range(len(features)) :
         score += features[i] * self.genes[i]
 
-      #print("score", self.genes, features, score)
       success += 1 if (score >= 1) == label else 0
 
     return success/len(data)
@@ -36,31 +34,30 @@ class Chromosome :
 ###########
 
 class GA :
-  poolSize = 100
-  breedRate = 0.3
-  mutateRate = 1
-  mutationDegree = 1
-  mutationComplexity = 0.5
+  def __init__(self, data, poolSize, breedRate, mutateRate, mutationDegree, mutationComplexity) :
+    self.poolSize = poolSize
+    self.breedRate = breedRate
+    self.mutateRate = mutateRate
+    self.mutationDegree = mutationDegree
+    self.mutationComplexity = mutationComplexity
 
-  def __init__(self, data) :
     self.data = data
     self.chromosomes = [Chromosome([random.uniform(-1, 1) for j in range(len(data[0][1]))]) for i in range(self.poolSize)]
 
   def evolve (self, stableFactor) :
-    max = self.chromosomes[0].genes
+    max = 0
     stableCycles = 0
 
     while stableCycles < stableFactor :
       self.cycle()
-      if (self.chromosomes[0].genes == max) :
+      score = self.chromosomes[0].score(self.data)
+      if (score == max) :
         stableCycles += 1
       else :
-        print("new")
-        max = self.chromosomes[0].genes[:]
+        max = score
         stableCycles = 0
-      print(stableCycles, max, self.chromosomes[0].score(self.data))
 
-    return max
+    return self.chromosomes[0].genes
 
   def cycle (self) :
     self.breed()
@@ -79,8 +76,7 @@ class GA :
     mutationResults = []
     for chromosome in self.chromosomes :
       if ( random.random() < self.mutateRate ) :
-        mutationResults.append(chromosome.mutate(self.mutationComplexity, self.mutationDegree));
-    self.chromosomes += mutationResults
+        chromosome.mutate(self.mutationComplexity, self.mutationDegree)
 
   def survive (self) :
     self.chromosomes = sorted(self.chromosomes, key=lambda chromosome: chromosome.score(self.data), reverse=True)
