@@ -15,32 +15,42 @@ def mapColumn (rows, col) :
 def getSkillList ():
   query = """
     MATCH (skill:Skill)
-    RETURN skill.skill
+    RETURN DISTINCT skill.skill
   """
   return cypherQuery(query)
 
 def getUserList ():
   query = """
     MATCH (user:User)
-    RETURN user.userId
+    RETURN DISTINCT user.userId
   """
   return cypherQuery(query)
 ###########################################################
 def getFeatureArrays ():
   skills = mapColumn(mapArray(getSkillList()), 0)
   users = mapColumn(mapArray(getUserList()), 0)
+  featureLength = len(skills)*2
+  features = [[0 for i in range(featureLength)] for i in users]
 
+  #HAS_SKILL
   query = """
-    MATCH (user:User)-->(skill:Skill)
+    MATCH (user:User)-[:HAS_SKILL]->(skill:Skill)
     RETURN user.userId, skill.skill
   """
   rows = mapArray(cypherQuery(query))
   
-  #transform
-  features = [[0 for i in skills] for i in users];
-
   for row in rows :
     features[users.index(row[0])][skills.index(row[1])] = 1
+
+  #INTERESTED_IN
+  query = """
+    MATCH (user:User)-[:INTERESTED_IN]->(skill:Skill)
+    RETURN user.userId, skill.skill
+  """
+  rows = mapArray(cypherQuery(query))
+  
+  for row in rows :
+    features[users.index(row[0])][skills.index(row[1])+featureLength/2] = 1
 
   return (users, features)
 
