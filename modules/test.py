@@ -10,5 +10,6 @@ for row in arr :
 
 print(data)
 ######
-best = GA(data=data, poolSize=10, breedRate=0.3, mutateRate=0.2, mutationDegree=0.05, mutationComplexity=0.3).evolve(100)
+host = GA(data=data, poolSize=10)
+best = host.evolve(stableFactor=100, breedRate=0.3, mutateRate=0.2, mutationDegree=0.05, mutationComplexity=0.3)
 print(best)

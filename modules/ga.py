@@ -34,22 +34,18 @@ class Chromosome :
 ###########
 
 class GA :
-  def __init__(self, data, poolSize, breedRate, mutateRate, mutationDegree, mutationComplexity) :
+  def __init__(self, data, poolSize, stableFactor=100) :
     self.poolSize = poolSize
-    self.breedRate = breedRate
-    self.mutateRate = mutateRate
-    self.mutationDegree = mutationDegree
-    self.mutationComplexity = mutationComplexity
-
     self.data = data
+    self.stableFactor = stableFactor
     self.chromosomes = [Chromosome([random.uniform(-1, 1) for j in range(len(data[0][1]))]) for i in range(self.poolSize)]
 
-  def evolve (self, stableFactor) :
+  def evolve (self, breedRate, mutateRate, mutationDegree, mutationComplexity) :
     max = 0
     stableCycles = 0
 
-    while stableCycles < stableFactor :
-      self.cycle()
+    while stableCycles < self.stableFactor :
+      self.cycle(breedRate, mutateRate, mutationDegree, mutationComplexity)
       score = self.chromosomes[0].score(self.data)
       if (score == max) :
         stableCycles += 1
@@ -59,24 +55,24 @@ class GA :
 
     return self.chromosomes[0].genes
 
-  def cycle (self) :
-    self.breed()
-    self.mutate()
+  def cycle (self, breedRate, mutateRate, mutationDegree, mutationComplexity) :
+    self.breed(breedRate)
+    self.mutate(mutateRate, mutationDegree, mutationComplexity)
     self.survive()
 
-  def breed (self) :
-    self.chromosomes += [self.breedRandom() for i in range(int(self.poolSize*self.breedRate))]
+  def breed (self, breedRate) :
+    self.chromosomes += [self.breedRandom() for i in range(int(self.poolSize*breedRate))]
 
   def breedRandom (self) :
     f = self.chromosomes[random.randint(0, self.poolSize-1)]
     m = self.chromosomes[random.randint(0, self.poolSize-1)]
     return f.breedWith(m)
 
-  def mutate (self) :
+  def mutate (self, mutationRate, mutationDegree, mutationComplexity) :
     mutationResults = []
     for chromosome in self.chromosomes :
-      if ( random.random() < self.mutateRate ) :
-        chromosome.mutate(self.mutationComplexity, self.mutationDegree)
+      if ( random.random() < mutationRate ) :
+        chromosome.mutate(mutationComplexity, mutationDegree)
 
   def survive (self) :
     self.chromosomes = sorted(self.chromosomes, key=lambda chromosome: chromosome.score(self.data), reverse=True)
