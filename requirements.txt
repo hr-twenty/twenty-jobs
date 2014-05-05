@@ -1,6 +1,5 @@
 astroid==1.0.1 
 colorama==0.2.7 
-cx-Freeze==4.3.2 
 Cython==0.20.1 
 docutils==0.11 
 fonttools==2.3 

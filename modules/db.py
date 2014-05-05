@@ -70,7 +70,8 @@ def createClusters (num):
 def assignCluster (userId, clusterId) :
   query = """
     START cluster=node({1})
-    MERGE (me:User {{userId:"{0}"}})-[r:BELONGS_TO]->(cluster)
+    MATCH (me:User {{userId:"{0}"}}), 
+    CREATE UNIQUE (me)-[r:BELONGS_TO]->(cluster)
   """
   query = query.format(userId, clusterId)
   
